@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Business — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#F4E9D8; --cream-2:#EEE0C8; --sand:#E6D3AE;
+    --espresso:#3B2E20; --espresso-2:#4A3A28;
+    --ink:#2E2415; --gold:#A9793F; --gold-soft:#C99B5C; --gold-tint:#EAD9B8;
+    --stone:#7C6E58; --stone-light:#DBC7A2;
+    --green:#4E7A52; --red:#A94435; --amber:#B8863F;
+    --serif:'Fraunces', serif; --sans:'Manrope', sans-serif;
+  }
+  *{margin:0; padding:0; box-sizing:border-box;}
+  body{font-family:var(--sans); background:var(--cream); color:var(--ink); -webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:var(--serif); font-weight:500;}
+  button{font-family:inherit; cursor:pointer; border:none; background:none;}
+  input,select,textarea{font-family:inherit;}
+
+  /* ---------- Login ---------- */
+  #loginScreen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:var(--espresso);
+  }
+  .login-card{
+    background:var(--cream); padding:48px 44px; border-radius:8px; width:100%; max-width:380px;
+    box-shadow:0 30px 60px rgba(0,0,0,.3);
+  }
+  .login-card .eyebrow{font-family:var(--serif); font-style:italic; color:var(--gold); font-size:20px; display:block; margin-bottom:4px;}
+  .login-card h1{font-size:28px; margin-bottom:28px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:var(--stone); margin-bottom:8px;}
+  .field input{
+    width:100%; border:1px solid var(--stone-light); background:#fff; border-radius:6px;
+    padding:12px 14px; font-size:14.5px; color:var(--ink); transition:border-color .2s ease;
+  }
+  .field input:focus{outline:none; border-color:var(--gold);}
+  .btn-primary{
+    width:100%; background:var(--ink); color:var(--cream); padding:14px; border-radius:6px;
+    font-size:13px; letter-spacing:.08em; text-transform:uppercase; font-weight:700; transition:background .2s ease;
+  }
+  .btn-primary:hover{background:var(--gold);}
+  .btn-primary[disabled]{opacity:.6; cursor:not-allowed;}
+  .login-error{color:var(--red); font-size:13px; margin-top:14px; font-weight:600; display:none;}
+
+  .login-divider{display:flex; align-items:center; gap:12px; margin:22px 0; color:var(--stone); font-size:12px; text-transform:uppercase; letter-spacing:.08em;}
+  .login-divider::before, .login-divider::after{content:''; flex:1; height:1px; background:var(--stone-light);}
+  .btn-google{
+    width:100%; background:#fff; border:1px solid var(--stone-light); color:var(--ink); padding:12px;
+    border-radius:6px; font-size:13.5px; font-weight:600; display:flex; align-items:center; justify-content:center;
+    gap:10px; transition:all .2s ease;
+  }
+  .btn-google:hover{border-color:var(--gold); background:var(--cream-2);}
+  .btn-google[disabled]{opacity:.6; cursor:not-allowed;}
+
+  /* ---------- Dashboard shell ---------- */
+  #dashboard{display:none; min-height:100vh; grid-template-columns:230px 1fr;}
+  #dashboard.active{display:grid;}
+  aside{background:var(--espresso); color:var(--cream); padding:28px 20px; display:flex; flex-direction:column;}
+  .side-brand{font-family:var(--serif); font-size:20px; margin-bottom:6px;}
+  .side-brand em{font-style:italic; color:var(--gold-soft); display:block; font-size:14px;}
+  .side-nav{margin-top:36px; display:flex; flex-direction:column; gap:4px;}
+  .side-nav button{
+    text-align:left; padding:11px 14px; border-radius:6px; font-size:13.5px; font-weight:600;
+    color:var(--stone-light); transition:all .2s ease;
+  }
+  .side-nav button:hover{background:rgba(255,255,255,.06); color:#fff;}
+  .side-nav button.active{background:var(--gold); color:#fff;}
+  .side-foot{margin-top:16px; padding-top:20px; border-top:1px solid rgba(255,255,255,.12);}
+  .side-nav button{display:flex; align-items:center; justify-content:space-between;}
+  .nav-badge{
+    display:none; align-items:center; justify-content:center; min-width:20px; height:20px; padding:0 6px;
+    border-radius:999px; background:var(--gold); color:#fff; font-size:11px; font-weight:700;
+  }
+  .nav-badge.show{display:inline-flex; animation:badgePop .4s ease;}
+  @keyframes badgePop{0%{transform:scale(.4);}60%{transform:scale(1.25);}100%{transform:scale(1);}}
+
+  .side-alerts{
+    margin-top:auto; padding:14px; background:rgba(255,255,255,.06); border-radius:10px;
+    color:var(--stone-light); font-size:12px; line-height:1.5;
+  }
+  .side-alerts button{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--gold-soft);
+    color:var(--cream); font-size:12.5px; font-weight:700; transition:background .2s ease;
+  }
+  .side-alerts button:hover{background:var(--gold); border-color:var(--gold);}
+  .side-alerts button.on{background:rgba(78,122,82,.25); border-color:#6FA574;}
+  .side-alerts small{display:block; margin-top:8px; color:var(--stone-light); opacity:.85;}
+  .side-foot button{color:var(--stone-light); font-size:12.5px; font-weight:600;}
+  .side-foot button:hover{color:#fff;}
+
+  main{padding:36px 44px; overflow-y:auto; max-height:100vh;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .view-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px;}
+  .view-head h2{font-size:26px;}
+  .tabs{display:flex; gap:6px;}
+  .tab-btn{
+    padding:8px 16px; border-radius:999px; font-size:12.5px; font-weight:700; color:var(--stone);
+    border:1px solid var(--stone-light); transition:all .2s ease;
+  }
+  .tab-btn.active{background:var(--ink); color:var(--cream); border-color:var(--ink);}
+
+  .stat-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:30px;}
+  .stat-card{background:#fff; border:1px solid var(--stone-light); border-radius:10px; padding:18px 20px;}
+  .stat-card b{font-family:var(--serif); font-size:28px; color:var(--gold); display:block;}
+  .stat-card span{font-size:11.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--stone); font-weight:700;}
+
+  .appt-list{display:flex; flex-direction:column; gap:10px;}
+  .appt-row{
+    background:#fff; border:1px solid var(--stone-light); border-radius:10px; padding:16px 20px;
+    display:grid; grid-template-columns:120px 1fr 1fr auto; align-items:center; gap:18px;
+  }
+  .appt-when b{font-family:var(--serif); font-size:16px; display:block;}
+  .appt-when span{font-size:12px; color:var(--stone);}
+  .appt-service{font-weight:700; font-size:14.5px;}
+  .appt-service small{display:block; font-weight:400; color:var(--stone); font-size:12px; margin-top:2px;}
+  .appt-client{font-size:13.5px;}
+  .appt-client small{display:block; color:var(--stone); font-size:12px; margin-top:2px;}
+  .appt-actions{display:flex; gap:8px; align-items:center;}
+  .appt-note{
+    grid-column:1 / -1; margin-top:2px; padding:10px 14px; background:var(--cream-2);
+    border-radius:7px; font-size:13px; color:var(--ink); line-height:1.5;
+    white-space:pre-wrap; word-break:break-word;
+  }
+  .badge{padding:4px 10px; border-radius:999px; font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase;}
+  .badge.confirmed{background:#E4F0E5; color:var(--green);}
+  .badge.completed{background:var(--gold-tint); color:var(--gold);}
+  .badge.cancelled{background:#F5E2DF; color:var(--red);}
+  .badge.no-show{background:#F0E6D0; color:var(--amber);}
+  .icon-btn{
+    width:30px; height:30px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    color:var(--stone); border:1px solid var(--stone-light); transition:all .2s ease;
+  }
+  .icon-btn:hover{background:var(--cream-2); color:var(--ink);}
+  .icon-btn.danger:hover{background:#F5E2DF; color:var(--red); border-color:var(--red);}
+  .icon-btn.whatsapp-btn{color:#25D366;}
+  .icon-btn.whatsapp-btn:hover{background:#E5F8ED; color:#1DA851; border-color:#25D366;}
+  .empty-msg{color:var(--stone); font-style:italic; font-family:var(--serif); padding:30px 0; text-align:center;}
+  @media(max-width:900px){ .appt-row{grid-template-columns:1fr; gap:8px;} .stat-row{grid-template-columns:1fr 1fr;} }
+
+  /* Services */
+  .svc-table{width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--stone-light); border-radius:10px; overflow:hidden;}
+  .svc-table th{text-align:left; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--stone); padding:12px 16px; background:var(--cream-2);}
+  .svc-table td{padding:12px 16px; border-top:1px solid var(--stone-light); font-size:14px;}
+  .svc-table input[type=text], .svc-table input[type=number]{
+    border:1px solid transparent; background:transparent; padding:6px 8px; border-radius:5px; font-size:14px; width:100%;
+  }
+  .svc-table input:focus{outline:none; border-color:var(--gold); background:#fff;}
+  .toggle{width:38px; height:22px; border-radius:999px; background:var(--stone-light); position:relative; transition:background .2s ease; display:inline-block;}
+  .toggle.on{background:var(--green);}
+  .toggle::after{content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#fff; transition:left .2s ease;}
+  .toggle.on::after{left:18px;}
+  .add-row{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .add-row input{border:1px solid var(--stone-light); border-radius:6px; padding:9px 12px; font-size:13.5px;}
+  .btn-sm{background:var(--ink); color:var(--cream); padding:9px 18px; border-radius:6px; font-size:12.5px; font-weight:700;}
+  .btn-sm:hover{background:var(--gold);}
+
+  /* Settings */
+  .hours-grid{background:#fff; border:1px solid var(--stone-light); border-radius:10px; padding:6px 20px;}
+  .hours-row{display:grid; grid-template-columns:110px 1fr 100px 100px; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--cream-2);}
+  .hours-row:last-child{border-bottom:none;}
+  .hours-row input[type=time]{border:1px solid var(--stone-light); border-radius:6px; padding:7px 10px; font-size:13.5px;}
+  .hours-row label.closed-check{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--stone); font-weight:600;}
+  .settings-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:24px 0;}
+  .settings-field{background:#fff; border:1px solid var(--stone-light); border-radius:10px; padding:16px 18px;}
+  .settings-field label{display:block; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--stone); font-weight:700; margin-bottom:8px;}
+  .settings-field input{border:none; font-size:20px; font-family:var(--serif); width:100%; color:var(--ink);}
+  .settings-field input:focus{outline:none;}
+  .blocked-list{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+  .blocked-row{display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--stone-light); border-radius:8px; padding:10px 16px; font-size:13.5px;}
+
+  /* ---------- New-booking alerts ---------- */
+  .alert-stack{
+    position:fixed; top:20px; right:20px; z-index:1500; display:flex; flex-direction:column; gap:10px;
+    width:340px; max-width:calc(100vw - 40px); pointer-events:none;
+  }
+  .booking-alert{
+    pointer-events:auto; display:flex; gap:12px; align-items:flex-start; cursor:pointer;
+    background:#fff; border:1px solid var(--stone-light); border-left:4px solid var(--gold);
+    border-radius:10px; padding:14px 14px 14px 16px; box-shadow:0 14px 40px rgba(46,36,21,.22);
+    animation:alertIn .45s cubic-bezier(.16,.8,.3,1);
+  }
+  .booking-alert.leaving{animation:alertOut .3s ease forwards;}
+  @keyframes alertIn{from{opacity:0; transform:translateX(40px);}to{opacity:1; transform:translateX(0);}}
+  @keyframes alertOut{to{opacity:0; transform:translateX(40px);}}
+  .ba-ico{font-size:20px; line-height:1;}
+  .ba-body{flex:1; min-width:0; font-size:13px; color:var(--stone); line-height:1.5;}
+  .ba-body b{display:block; font-family:var(--serif); font-size:16px; color:var(--ink); font-weight:500;}
+  .ba-body strong{color:var(--ink);}
+  .ba-close{color:var(--stone); font-size:14px; padding:2px 4px;}
+  .ba-close:hover{color:var(--ink);}
+  .appt-row.appt-new{border-color:var(--gold); box-shadow:0 0 0 3px rgba(169,121,63,.18); animation:newGlow 2.4s ease-out 1;}
+  .new-pill{
+    display:inline-block; margin-left:8px; padding:2px 8px; border-radius:999px; background:var(--gold);
+    color:#fff; font-family:var(--sans); font-size:10px; font-weight:700; letter-spacing:.08em; vertical-align:middle;
+  }
+  @keyframes newGlow{0%{box-shadow:0 0 0 0 rgba(169,121,63,.55);}100%{box-shadow:0 0 0 3px rgba(169,121,63,.18);}}
+
+  .toast{
+    position:fixed; bottom:24px; right:24px; background:var(--ink); color:var(--cream); padding:14px 22px;
+    border-radius:8px; font-size:13.5px; font-weight:600; opacity:0; transform:translateY(10px);
+    transition:all .3s ease; pointer-events:none; z-index:999;
+  }
+  .toast.show{opacity:1; transform:translateY(0);}
+  .toast.error{background:var(--red);}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-card">
+    <span class="eyebrow">admin</span>
+    <h1><span data-brand="name">Your Business</span> Admin</h1>
+    <form id="loginForm">
+      <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" required autocomplete="username"></div>
+      <div class="field"><label for="loginPass">Password</label><input id="loginPass" type="password" required autocomplete="current-password"></div>
+      <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
+      <p class="login-error" id="loginError">Incorrect email or password.</p>
+    </form>
+    <div class="login-divider"><span>or</span></div>
+    <button type="button" class="btn-google" id="googleLoginBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.59-2.59C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+  </div>
+</div>
+
+<div id="dashboard">
+  <aside>
+    <div class="side-brand"><span data-brand="name">Your Business</span><em>admin</em></div>
+    <nav class="side-nav">
+      <button data-view="appointments" class="active"><span>Appointments</span><span class="nav-badge" id="navBadge"></span></button>
+      <button data-view="services">Services</button>
+      <button data-view="settings">Settings</button>
+    </nav>
+    <div class="side-alerts" id="alertBox">
+      <button type="button" id="enableAlertsBtn">🔔 Turn on booking alerts</button>
+      <small id="alertStatus">Sound + pop-up the moment a client books.</small>
+    </div>
+    <div class="side-foot"><button id="logoutBtn">Sign Out</button></div>
+  </aside>
+
+  <main>
+    <!-- Appointments -->
+    <section class="view active" id="view-appointments">
+      <div class="view-head">
+        <h2>Appointments</h2>
+        <div class="tabs" id="apptTabs">
+          <button class="tab-btn active" data-filter="upcoming">Upcoming</button>
+          <button class="tab-btn" data-filter="today">Today</button>
+          <button class="tab-btn" data-filter="all">All</button>
+          <button class="tab-btn" data-filter="cancelled">Cancelled</button>
+        </div>
+      </div>
+      <div class="stat-row" id="statRow">
+        <div class="stat-card"><b id="statToday">–</b><span>Today</span></div>
+        <div class="stat-card"><b id="statUpcoming">–</b><span>Upcoming</span></div>
+        <div class="stat-card"><b id="statWeek">–</b><span>This Week</span></div>
+        <div class="stat-card"><b id="statCancelled">–</b><span>Cancelled</span></div>
+      </div>
+      <div class="appt-list" id="apptList"><p class="empty-msg">Loading appointments…</p></div>
+    </section>
+
+    <!-- Services -->
+    <section class="view" id="view-services">
+      <div class="view-head"><h2>Services</h2></div>
+      <table class="svc-table">
+        <thead><tr><th>Name</th><th>Duration (min)</th><th>Price (<span data-brand="currency.code">USD</span>)</th><th>Active</th><th></th></tr></thead>
+        <tbody id="servicesBody"><tr><td colspan="5" class="empty-msg">Loading services…</td></tr></tbody>
+      </table>
+      <div class="add-row">
+        <input type="text" id="newSvcName" placeholder="Service name">
+        <input type="number" id="newSvcDuration" placeholder="e.g. 45" style="width:140px;">
+        <input type="number" id="newSvcPrice" placeholder="e.g. 350" style="width:120px;">
+        <button class="btn-sm" id="addSvcBtn">Add Service</button>
+      </div>
+      <p style="font-size:12.5px; color:var(--stone); margin-top:10px; font-style:italic; font-family:var(--serif);">
+        Duration and price need to be a single number each (the booking calendar needs one fixed length to reserve).
+        For services with a range — like "Haircut, 30–45 min" — add separate entries instead,
+        e.g. "Haircut — Short" (30 min) and "Haircut — Long" (45 min).
+      </p>
+    </section>
+
+    <!-- Settings -->
+    <section class="view" id="view-settings">
+      <div class="view-head"><h2>Business Hours &amp; Rules</h2></div>
+
+      <div class="hours-grid" id="hoursGrid"></div>
+
+      <div class="settings-grid">
+        <div class="settings-field"><label>Slot Interval (min)</label><input type="number" id="setInterval" value="15"></div>
+        <div class="settings-field"><label>Buffer Between Bookings (min)</label><input type="number" id="setBuffer" value="0"></div>
+        <div class="settings-field"><label>Booking Cutoff (hrs before)</label><input type="number" id="setCutoff" value="2"></div>
+      </div>
+      <button class="btn-sm" id="saveHoursBtn">Save Hours &amp; Rules</button>
+
+      <h2 style="margin-top:40px; margin-bottom:16px; font-size:22px;">Blocked Dates</h2>
+      <div class="add-row">
+        <input type="date" id="newBlockedDate">
+        <input type="text" id="newBlockedReason" placeholder="Reason (optional)" style="width:220px;">
+        <button class="btn-sm" id="addBlockedBtn">Block Date</button>
+      </div>
+      <div class="blocked-list" id="blockedList"></div>
+    </section>
+  </main>
+</div>
+
+<div class="alert-stack" id="alertStack"></div>
+<div class="toast" id="toast"></div>
+
+<!-- =====================================================================
+     TEMPLATE CONFIG  —  EDIT THIS BLOCK FIRST WHEN REBRANDING
+     Keep name / currency / locale / noun / soundFile in sync with the BRAND
+     block in the public index.html. adminEmails must ALSO be listed in
+     firestore.rules (isAdmin) — the rules are what actually protect the data.
+     ===================================================================== -->
+<script>
+var BRAND = {
+  name: 'Your Business',
+  currency: { code: 'USD', prefix: '$' },
+  locale: 'en-GB',                    // date formatting: 'en-GB' or 'en-US'
+  noun: 'appointment',                // fallback word in the WhatsApp message
+  soundFile: 'notification.mp3',      // new-booking alert sound (same folder as this file, or one level up)
+
+  // Everyone listed here gets FULL dashboard access (email/password OR Google sign-in).
+  adminEmails: [
+    'you@example.com'
+    // , 'employee@example.com'
+  ],
+
+  // One-click WhatsApp message in the Appointments list. Tokens: {name} {business} {service} {date} {time}
+  whatsappTemplate: 'Hi {name}, this is {business} confirming your {service} on {date} at {time}. See you then!'
+};
+(function(){
+  try{
+    document.title = BRAND.name + ' — Admin';
+    document.querySelectorAll('[data-brand]').forEach(function(el){
+      var v = el.getAttribute('data-brand').split('.').reduce(function(o,k){ return o ? o[k] : undefined; }, BRAND);
+      if(v !== undefined && v !== null) el.textContent = v;
+    });
+  }catch(err){ console.error('Brand config failed:', err); }
+})();
+</script>
+
+<!-- Firebase — replace firebaseConfig with your real project config -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+  var firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+  try{ firebase.initializeApp(firebaseConfig); }catch(err){ console.error('Firebase init failed:', err); }
+</script>
+
+<script>
+(function(){
+  if(typeof firebase === 'undefined'){
+    document.getElementById('loginError').textContent = 'Firebase isn\'t configured yet — add your project config before this dashboard will work.';
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  var auth = firebase.auth();
+  var db = firebase.firestore();
+  var dayKeys = ['sun','mon','tue','wed','thu','fri','sat'];
+  var dayLabels = {sun:'Sunday',mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday'};
+
+  function toast(msg, isError){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(function(){ t.className = 'toast'; }, 3200);
+  }
+
+
+  // ---------- New-booking alerts ----------
+  // Sound + on-screen card + nav badge + tab title + (optional) desktop
+  // notification, fired whenever a booking arrives while the dashboard is open.
+  var BASE_TITLE = document.title;
+  var unseenCount = 0;
+  var navUnseen = 0;
+  var alertAudio = null;
+  var audioCtx = null;
+
+  function getAlertAudio(){
+    if(!alertAudio){
+      alertAudio = new Audio(BRAND.soundFile || 'notification.mp3');
+      alertAudio.preload = 'auto';
+      alertAudio.addEventListener('error', function(){
+        // Admin file may live in a subfolder — try one level up before giving up
+        if(!alertAudio._triedParent){ alertAudio._triedParent = true; alertAudio.src = '../' + (BRAND.soundFile || 'notification.mp3'); alertAudio.load(); }
+      });
+    }
+    return alertAudio;
+  }
+  function fallbackChime(){
+    try{
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC) return;
+      audioCtx = audioCtx || new AC();
+      [880, 1175].forEach(function(freq, i){
+        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        var t = audioCtx.currentTime + i * 0.16;
+        o.type = 'sine'; o.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.25, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(t); o.stop(t + 0.55);
+      });
+    }catch(err){}
+  }
+  function playAlertSound(){
+    try{
+      var a = getAlertAudio();
+      a.currentTime = 0;
+      var p = a.play();
+      if(p && p.catch) p.catch(function(err){
+        // Missing file => still make some noise; autoplay-blocked => stay quiet
+        if(err && err.name === 'NotSupportedError') fallbackChime();
+      });
+    }catch(err){ fallbackChime(); }
+  }
+  // Browsers only allow sound after a click/tap. After a page reload the
+  // login session persists with no click, so quietly unlock audio on the
+  // first interaction anywhere on the page.
+  document.addEventListener('pointerdown', function primeAudio(){
+    document.removeEventListener('pointerdown', primeAudio);
+    try{
+      var a = getAlertAudio();
+      a.muted = true;
+      var p = a.play();
+      var done = function(){ try{ a.pause(); a.currentTime = 0; }catch(e){} a.muted = false; };
+      if(p && p.then) p.then(done).catch(function(){ a.muted = false; }); else done();
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(AC){ audioCtx = audioCtx || new AC(); if(audioCtx.resume) audioCtx.resume(); }
+    }catch(err){}
+  });
+
+  function updateTitle(){
+    document.title = unseenCount > 0 ? '(' + unseenCount + ') New booking · ' + BASE_TITLE : BASE_TITLE;
+  }
+  function clearTitleCount(){ unseenCount = 0; updateTitle(); }
+  window.addEventListener('focus', clearTitleCount);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) clearTitleCount(); });
+
+  function appointmentsViewActive(){
+    var v = document.getElementById('view-appointments');
+    return !!(v && v.classList.contains('active'));
+  }
+  function bumpNavBadge(){
+    var badge = document.getElementById('navBadge');
+    if(!badge || appointmentsViewActive()) return;
+    navUnseen++;
+    badge.textContent = navUnseen;
+    badge.classList.remove('show'); void badge.offsetWidth; badge.classList.add('show');
+  }
+  (function(){
+    var navBtn = document.querySelector('.side-nav button[data-view="appointments"]');
+    if(navBtn) navBtn.addEventListener('click', function(){
+      navUnseen = 0;
+      var badge = document.getElementById('navBadge');
+      if(badge){ badge.classList.remove('show'); badge.textContent = ''; }
+    });
+  })();
+
+  function showAlertCard(a){
+    var stack = document.getElementById('alertStack');
+    if(!stack) return;
+    var card = document.createElement('div');
+    card.className = 'booking-alert';
+    card.innerHTML =
+      '<div class="ba-ico">🔔</div>' +
+      '<div class="ba-body"><b>' + (a.test ? 'Test alert' : 'New booking') + '</b>' +
+        '<strong>' + escapeHtml(a.clientName || 'A client') + '</strong> · ' + escapeHtml(a.serviceName || '') + '<br>' +
+        escapeHtml(formatDate(a.date)) + ' · ' + escapeHtml(displayTime(a.startTime)) +
+      '</div>' +
+      '<button type="button" class="ba-close" aria-label="Dismiss">✕</button>';
+    var dismiss = function(){
+      if(!card.parentNode) return;
+      card.classList.add('leaving');
+      setTimeout(function(){ if(card.parentNode) card.parentNode.removeChild(card); }, 300);
+    };
+    card.querySelector('.ba-close').addEventListener('click', function(e){ e.stopPropagation(); dismiss(); });
+    card.addEventListener('click', function(){
+      var navBtn = document.querySelector('.side-nav button[data-view="appointments"]');
+      if(navBtn) navBtn.click();
+      dismiss();
+    });
+    stack.appendChild(card);
+    while(stack.children.length > 4) stack.removeChild(stack.firstChild);
+    setTimeout(dismiss, 25000);
+  }
+
+  function showDesktopNotification(a){
+    try{
+      if(!('Notification' in window) || Notification.permission !== 'granted') return;
+      var n = new Notification((a.test ? 'Test alert — ' : 'New booking — ') + BRAND.name, {
+        body: (a.clientName || 'A client') + ' · ' + (a.serviceName || '') + '\n' + formatDate(a.date) + ' at ' + displayTime(a.startTime),
+        tag: a.id || 'booking-test'
+      });
+      n.onclick = function(){ try{ window.focus(); n.close(); }catch(e){} };
+    }catch(err){}
+  }
+
+  function notifyNewBooking(a){
+    playAlertSound();
+    showAlertCard(a);
+    showDesktopNotification(a);
+    if(a.test) return;
+    bumpNavBadge();
+    if(document.hidden || !document.hasFocus()){ unseenCount++; updateTitle(); }
+  }
+
+  (function(){
+    var btn = document.getElementById('enableAlertsBtn');
+    var status = document.getElementById('alertStatus');
+    if(!btn || !status) return;
+    function refresh(){
+      if(!('Notification' in window)){
+        btn.textContent = '🔔 Send a test alert';
+        status.textContent = 'Sound + on-screen alerts are on. (This browser has no desktop notifications.)';
+        return;
+      }
+      if(Notification.permission === 'granted'){
+        btn.textContent = '🔔 Alerts on — tap to test'; btn.classList.add('on');
+        status.textContent = 'Sound, pop-up and desktop notifications are on. Keep this tab open.';
+      }else if(Notification.permission === 'denied'){
+        btn.textContent = '🔔 Send a test alert'; btn.classList.remove('on');
+        status.textContent = 'Desktop notifications are blocked in your browser — sound + pop-ups still work.';
+      }else{
+        btn.textContent = '🔔 Turn on booking alerts'; btn.classList.remove('on');
+        status.textContent = 'Sound + pop-up the moment a client books.';
+      }
+    }
+    btn.addEventListener('click', function(){
+      var test = function(){
+        refresh();
+        notifyNewBooking({ test:true, clientName:'Sample Client', serviceName:'Signature Facial',
+          date:new Date().toISOString().split('T')[0], startTime:'10:00' });
+      };
+      if('Notification' in window && Notification.permission === 'default'){
+        var res = Notification.requestPermission(function(){ test(); });
+        if(res && res.then) res.then(test).catch(test);
+      }else{
+        test();
+      }
+    });
+    refresh();
+  })();
+
+  // ---------- Auth ----------
+  var loginForm = document.getElementById('loginForm');
+  var loginBtn = document.getElementById('loginBtn');
+  var loginError = document.getElementById('loginError');
+
+  loginForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    loginBtn.disabled = true; loginBtn.textContent = 'Signing in…';
+    loginError.style.display = 'none';
+    auth.signInWithEmailAndPassword(
+      document.getElementById('loginEmail').value.trim(),
+      document.getElementById('loginPass').value
+    ).catch(function(err){
+      console.error('Login failed:', err);
+      loginError.textContent = 'Incorrect email or password.';
+      loginError.style.display = 'block';
+    }).finally(function(){
+      loginBtn.disabled = false; loginBtn.textContent = 'Sign In';
+    });
+  });
+
+  // IMPORTANT: Google lets ANYONE with a Google account sign in — unlike
+  // email/password, where only accounts you manually create in Firebase
+  // Auth can log in at all. Without this allowlist, "Continue with Google"
+  // would hand full admin access to literally any Google user who clicks it.
+  // Add every email that should have admin access here.
+  // Add every employee/admin's email here who should have dashboard access.
+  // For email/password logins, you also need to create their account under
+  // Firebase Console → Authentication → Users → Add user. For Google
+  // sign-in, they just need their Google email listed here — no separate
+  // account creation needed.
+  var ADMIN_EMAILS = (BRAND.adminEmails || []).map(function(e){ return String(e).toLowerCase(); });
+
+  document.getElementById('logoutBtn').addEventListener('click', function(){ auth.signOut(); });
+
+  var googleBtn = document.getElementById('googleLoginBtn');
+  googleBtn.addEventListener('click', function(){
+    googleBtn.disabled = true;
+    loginError.style.display = 'none';
+    var provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).then(function(result){
+      var email = result.user && result.user.email;
+      if(ADMIN_EMAILS.indexOf(String(email || '').toLowerCase()) === -1){
+        auth.signOut();
+        loginError.textContent = 'That Google account isn\'t authorized for admin access.';
+        loginError.style.display = 'block';
+      }
+    }).catch(function(err){
+      console.error('Google sign-in failed:', err);
+      loginError.textContent = 'Google sign-in failed — try again, or use email/password.';
+      loginError.style.display = 'block';
+    }).finally(function(){
+      googleBtn.disabled = false;
+    });
+  });
+
+  auth.onAuthStateChanged(function(user){
+    document.getElementById('loginScreen').style.display = user ? 'none' : 'flex';
+    document.getElementById('dashboard').classList.toggle('active', !!user);
+    if(user){ initDashboard(); }
+  });
+
+  // ---------- Nav ----------
+  document.querySelectorAll('.side-nav button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.side-nav button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+      document.getElementById('view-' + btn.dataset.view).classList.add('active');
+    });
+  });
+
+  var dashboardInitialized = false;
+  function initDashboard(){
+    if(dashboardInitialized) return;
+    dashboardInitialized = true;
+    initAppointments();
+    initServices();
+    initSettings();
+  }
+
+  // ---------- Appointments (live) ----------
+  function initAppointments(){
+    var listEl = document.getElementById('apptList');
+    var currentFilter = 'upcoming';
+    var allAppts = [];
+
+    document.getElementById('apptTabs').addEventListener('click', function(e){
+      var btn = e.target.closest('.tab-btn');
+      if(!btn) return;
+      document.querySelectorAll('#apptTabs .tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      currentFilter = btn.dataset.filter;
+      render();
+    });
+
+    var knownIds = {};
+    var newIds = {};
+    var firstSnapshot = true;
+
+    db.collection('appointments').orderBy('date').onSnapshot(function(snap){
+      allAppts = [];
+      snap.forEach(function(doc){ allAppts.push(Object.assign({id: doc.id}, doc.data())); });
+
+      // Alert only for genuinely NEW bookings — never for the initial load,
+      // and never twice for the same appointment (e.g. after a reconnect).
+      snap.docChanges().forEach(function(ch){
+        var id = ch.doc.id;
+        if(ch.type === 'added' && !knownIds[id] && !firstSnapshot){
+          var d = ch.doc.data();
+          if(!d.status || d.status === 'confirmed'){
+            newIds[id] = true;
+            setTimeout(function(){ delete newIds[id]; }, 10 * 60 * 1000);
+            notifyNewBooking(Object.assign({id: id}, d));
+          }
+        }
+        knownIds[id] = true;
+      });
+      firstSnapshot = false;
+      allAppts.sort(function(a, b){
+        if(a.date !== b.date) return a.date < b.date ? -1 : 1;
+        return (a.startTime || '').localeCompare(b.startTime || '');
+      });
+      render();
+    }, function(err){
+      console.error('Appointments listener failed:', err);
+      listEl.innerHTML = '<p class="empty-msg">Could not load appointments.</p>';
+    });
+
+    function todayStr(){ return new Date().toISOString().split('T')[0]; }
+
+    function render(){
+      var today = todayStr();
+      var weekAhead = new Date(); weekAhead.setDate(weekAhead.getDate() + 7);
+      var weekStr = weekAhead.toISOString().split('T')[0];
+
+      document.getElementById('statToday').textContent = allAppts.filter(function(a){ return a.date === today && a.status !== 'cancelled'; }).length;
+      document.getElementById('statUpcoming').textContent = allAppts.filter(function(a){ return a.date >= today && a.status === 'confirmed'; }).length;
+      document.getElementById('statWeek').textContent = allAppts.filter(function(a){ return a.date >= today && a.date <= weekStr && a.status !== 'cancelled'; }).length;
+      document.getElementById('statCancelled').textContent = allAppts.filter(function(a){ return a.status === 'cancelled'; }).length;
+
+      var filtered = allAppts.filter(function(a){
+        if(currentFilter === 'today') return a.date === today;
+        if(currentFilter === 'upcoming') return a.date >= today && a.status === 'confirmed';
+        if(currentFilter === 'cancelled') return a.status === 'cancelled';
+        return true;
+      });
+
+      if(!filtered.length){
+        listEl.innerHTML = '<p class="empty-msg">No appointments here.</p>';
+        return;
+      }
+
+      listEl.innerHTML = '';
+      filtered.forEach(function(a){
+        var row = document.createElement('div');
+        row.className = 'appt-row';
+        var statusClass = (a.status || 'confirmed').replace(' ','-');
+        var isNew = !!newIds[a.id];
+        if(isNew){
+          row.classList.add('appt-new');
+          row.addEventListener('click', function(){ delete newIds[a.id]; row.classList.remove('appt-new'); var pill = row.querySelector('.new-pill'); if(pill) pill.remove(); });
+        }
+        row.innerHTML =
+          '<div class="appt-when"><b>' + formatDate(a.date) + '</b><span>' + displayTime(a.startTime) + ' – ' + displayTime(a.endTime) + '</span></div>' +
+          '<div class="appt-service">' + escapeHtml(a.serviceName || '') + (isNew ? '<span class="new-pill">NEW</span>' : '') + '<small>' + (a.duration || '') + ' min</small></div>' +
+          '<div class="appt-client">' + escapeHtml(a.clientName || '') + '<small>' + escapeHtml(a.clientPhone || '') + ' · ' + escapeHtml(a.clientEmail || '') + '</small></div>' +
+          '<div class="appt-actions"><span class="badge ' + statusClass + '">' + (a.status || 'confirmed') + '</span></div>' +
+          (a.notes ? '<div class="appt-note">📝 ' + escapeHtml(a.notes) + '</div>' : '');
+
+        var actionsCell = row.querySelector('.appt-actions');
+        if(a.clientPhone){
+          actionsCell.appendChild(makeWhatsAppBtn(a));
+        }
+        if(a.status === 'confirmed'){
+          actionsCell.appendChild(makeIconBtn('✓', 'Mark completed', function(){ setStatus(a.id, 'completed'); }));
+          actionsCell.appendChild(makeIconBtn('–', 'Mark no-show', function(){ setStatus(a.id, 'no-show'); }));
+          actionsCell.appendChild(makeIconBtn('✕', 'Cancel', function(){ cancelAppointment(a.id); }, true));
+        }
+        listEl.appendChild(row);
+      });
+    }
+
+    function makeWhatsAppBtn(a){
+      var digits = String(a.clientPhone || '').replace(/[^\d]/g, '');
+      var vars = { name: a.clientName || '', business: BRAND.name, service: a.serviceName || BRAND.noun,
+        date: formatDate(a.date), time: displayTime(a.startTime) };
+      var msg = String(BRAND.whatsappTemplate).replace(/\{(\w+)\}/g, function(m, k){ return vars[k] !== undefined ? vars[k] : m; });
+      var link = document.createElement('a');
+      link.href = 'https://wa.me/' + digits + '?text=' + encodeURIComponent(msg);
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.className = 'icon-btn whatsapp-btn';
+      link.title = 'Message on WhatsApp';
+      link.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M17.6 6.3A8.86 8.86 0 0 0 12 4a8.9 8.9 0 0 0-7.7 13.3L3 21l3.8-1.2A8.9 8.9 0 0 0 12 21a8.9 8.9 0 0 0 8.9-8.9c0-2.4-.9-4.6-2.6-6.3zM12 19.3a7.4 7.4 0 0 1-3.8-1l-.3-.2-2.3.7.7-2.2-.2-.3A7.4 7.4 0 1 1 19.4 12 7.4 7.4 0 0 1 12 19.3zm4-5.5c-.2-.1-1.3-.6-1.5-.7s-.4-.1-.5.1-.6.7-.7.9-.3.2-.5.1a6 6 0 0 1-3-2.6c-.2-.4.2-.3.6-1.1.1-.1 0-.3 0-.4L9.6 8c-.2-.4-.4-.4-.5-.4h-.5a.9.9 0 0 0-.6.3 2.7 2.7 0 0 0-.8 2 4.7 4.7 0 0 0 1 2.4 10.6 10.6 0 0 0 4.3 3.8c1.5.6 1.5.4 1.8.4a1.5 1.5 0 0 0 1-.7 1.3 1.3 0 0 0 .1-.7c-.1-.1-.2-.2-.4-.3z"/></svg>';
+      return link;
+    }
+
+    function makeIconBtn(symbol, title, onClick, danger){
+      var b = document.createElement('button');
+      b.className = 'icon-btn' + (danger ? ' danger' : '');
+      b.title = title;
+      b.textContent = symbol;
+      b.addEventListener('click', onClick);
+      return b;
+    }
+
+    function setStatus(id, status){
+      db.collection('appointments').doc(id).update({ status: status })
+        .then(function(){ toast('Marked as ' + status + '.'); })
+        .catch(function(err){ console.error(err); toast('Could not update — try again.', true); });
+    }
+
+    function cancelAppointment(id){
+      if(!confirm('Cancel this appointment? This releases the time slot.')) return;
+      db.collection('slots').where('appointmentId', '==', id).get().then(function(snap){
+        var batch = db.batch();
+        snap.forEach(function(d){ batch.delete(d.ref); });
+        batch.update(db.collection('appointments').doc(id), { status: 'cancelled' });
+        return batch.commit();
+      }).then(function(){
+        toast('Appointment cancelled and slot released.');
+      }).catch(function(err){
+        console.error(err); toast('Could not cancel — try again.', true);
+      });
+    }
+  }
+
+  // ---------- Services ----------
+  function initServices(){
+    var tbody = document.getElementById('servicesBody');
+
+    db.collection('services').orderBy('order').onSnapshot(function(snap){
+      if(snap.empty){
+        tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">No services yet — add one below.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = '';
+      snap.forEach(function(doc){
+        var d = doc.data();
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td><input type="text" value="' + escapeAttr(d.name) + '" data-field="name"></td>' +
+          '<td><input type="number" value="' + (d.duration || 0) + '" data-field="duration" style="width:80px;"></td>' +
+          '<td><input type="number" value="' + (d.price || 0) + '" data-field="price" style="width:90px;"></td>' +
+          '<td><span class="toggle ' + (d.active ? 'on' : '') + '" data-field="active"></span></td>' +
+          '<td><button class="icon-btn danger" title="Delete">✕</button></td>';
+
+        tr.querySelectorAll('input').forEach(function(input){
+          input.addEventListener('change', function(){
+            var field = input.dataset.field;
+            var val = field === 'duration' || field === 'price' ? parseInt(input.value, 10) || 0 : input.value.trim();
+            db.collection('services').doc(doc.id).update(field === 'name' ? {name: val} : (field === 'duration' ? {duration: val} : {price: val}))
+              .then(function(){ toast('Service updated.'); })
+              .catch(function(err){ console.error(err); toast('Could not save — try again.', true); });
+          });
+        });
+        tr.querySelector('.toggle').addEventListener('click', function(){
+          var newVal = !d.active;
+          db.collection('services').doc(doc.id).update({ active: newVal })
+            .then(function(){ toast(newVal ? 'Service activated.' : 'Service hidden from booking.'); })
+            .catch(function(err){ console.error(err); toast('Could not save — try again.', true); });
+        });
+        tr.querySelector('.icon-btn.danger').addEventListener('click', function(){
+          if(!confirm('Delete "' + d.name + '"? This cannot be undone.')) return;
+          db.collection('services').doc(doc.id).delete()
+            .then(function(){ toast('Service deleted.'); })
+            .catch(function(err){ console.error(err); toast('Could not delete — try again.', true); });
+        });
+        tbody.appendChild(tr);
+      });
+    }, function(err){
+      console.error('Services listener failed:', err);
+      tbody.innerHTML = '<tr><td colspan="5" class="empty-msg">Could not load services.</td></tr>';
+    });
+
+    document.getElementById('addSvcBtn').addEventListener('click', function(){
+      var name = document.getElementById('newSvcName').value.trim();
+      var durationRaw = document.getElementById('newSvcDuration').value;
+      var priceRaw = document.getElementById('newSvcPrice').value;
+      var duration = parseInt(durationRaw, 10);
+      var price = parseInt(priceRaw, 10);
+
+      if(!name){ toast('Enter a service name first.', true); return; }
+      if(durationRaw === '' || isNaN(duration) || duration <= 0){
+        toast('Duration needs to be a single number of minutes (e.g. 45) — not a range.', true); return;
+      }
+      if(priceRaw === '' || isNaN(price) || price <= 0){
+        toast('Price needs to be a single number (e.g. 350) — not a range.', true); return;
+      }
+      db.collection('services').add({
+        name: name, duration: duration, price: price, active: true, order: Date.now()
+      }).then(function(){
+        toast('Service added.');
+        document.getElementById('newSvcName').value = '';
+        document.getElementById('newSvcDuration').value = '';
+        document.getElementById('newSvcPrice').value = '';
+      }).catch(function(err){ console.error(err); toast('Could not add service — try again.', true); });
+    });
+  }
+
+  // ---------- Settings ----------
+  function initSettings(){
+    var hoursGrid = document.getElementById('hoursGrid');
+    hoursGrid.innerHTML = dayKeys.map(function(key){
+      return '<div class="hours-row" data-day="' + key + '">' +
+        '<div>' + dayLabels[key] + '</div>' +
+        '<div style="display:flex; gap:10px; align-items:center;">' +
+          '<input type="time" class="open-input" value="09:00">' +
+          '<span style="color:var(--stone);">to</span>' +
+          '<input type="time" class="close-input" value="18:00">' +
+        '</div>' +
+        '<label class="closed-check"><input type="checkbox" class="closed-input"> Closed</label>' +
+        '<div></div>' +
+      '</div>';
+    }).join('');
+
+    db.collection('settings').doc('hours').get().then(function(doc){
+      var data = doc.exists ? doc.data() : {};
+      document.getElementById('setInterval').value = data.slotInterval || 15;
+      document.getElementById('setBuffer').value = data.bufferMinutes || 0;
+      document.getElementById('setCutoff').value = data.cutoffHours || 2;
+      dayKeys.forEach(function(key){
+        var cfg = data[key] || {};
+        var row = hoursGrid.querySelector('[data-day="' + key + '"]');
+        if(cfg.open) row.querySelector('.open-input').value = cfg.open;
+        if(cfg.close) row.querySelector('.close-input').value = cfg.close;
+        row.querySelector('.closed-input').checked = !!cfg.closed;
+      });
+    }).catch(function(err){ console.error('Could not load hours:', err); });
+
+    document.getElementById('saveHoursBtn').addEventListener('click', function(){
+      var payload = {
+        slotInterval: parseInt(document.getElementById('setInterval').value, 10) || 15,
+        bufferMinutes: parseInt(document.getElementById('setBuffer').value, 10) || 0,
+        cutoffHours: parseInt(document.getElementById('setCutoff').value, 10) || 0
+      };
+      dayKeys.forEach(function(key){
+        var row = hoursGrid.querySelector('[data-day="' + key + '"]');
+        var closed = row.querySelector('.closed-input').checked;
+        payload[key] = closed ? { closed: true } : {
+          open: row.querySelector('.open-input').value,
+          close: row.querySelector('.close-input').value
+        };
+      });
+      db.collection('settings').doc('hours').set(payload)
+        .then(function(){ toast('Business hours saved.'); })
+        .catch(function(err){ console.error(err); toast('Could not save — try again.', true); });
+    });
+
+    // Blocked dates
+    var blockedList = document.getElementById('blockedList');
+    db.collection('blockedDates').onSnapshot(function(snap){
+      if(snap.empty){ blockedList.innerHTML = '<p class="empty-msg" style="padding:14px 0;">No blocked dates.</p>'; return; }
+      blockedList.innerHTML = '';
+      snap.forEach(function(doc){
+        var d = doc.data();
+        var row = document.createElement('div');
+        row.className = 'blocked-row';
+        row.innerHTML = '<span><b>' + formatDate(doc.id) + '</b>' + (d.reason ? ' — ' + escapeHtml(d.reason) : '') + '</span>';
+        var removeBtn = document.createElement('button');
+        removeBtn.className = 'icon-btn danger';
+        removeBtn.textContent = '✕';
+        removeBtn.addEventListener('click', function(){
+          db.collection('blockedDates').doc(doc.id).delete().then(function(){ toast('Date unblocked.'); });
+        });
+        row.appendChild(removeBtn);
+        blockedList.appendChild(row);
+      });
+    });
+
+    document.getElementById('addBlockedBtn').addEventListener('click', function(){
+      var date = document.getElementById('newBlockedDate').value;
+      var reason = document.getElementById('newBlockedReason').value.trim();
+      if(!date){ toast('Pick a date first.', true); return; }
+      db.collection('blockedDates').doc(date).set({ reason: reason || '' })
+        .then(function(){
+          toast('Date blocked.');
+          document.getElementById('newBlockedDate').value = '';
+          document.getElementById('newBlockedReason').value = '';
+        }).catch(function(err){ console.error(err); toast('Could not block date — try again.', true); });
+    });
+  }
+
+  // ---------- Helpers ----------
+  function displayTime(t){
+    if(!t) return '';
+    var p = t.split(':'); var h = parseInt(p[0],10); var ap = h>=12?'PM':'AM'; var h12 = h%12; if(h12===0) h12=12;
+    return h12 + ':' + p[1] + ' ' + ap;
+  }
+  function formatDate(dateStr){
+    if(!dateStr) return '';
+    var d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString(BRAND.locale || 'en-GB', { weekday:'short', day:'numeric', month:'short' });
+  }
+  function escapeHtml(s){
+    return String(s || '').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function escapeAttr(s){ return escapeHtml(s); }
+})();
+</script>
+</body>
+</html>
